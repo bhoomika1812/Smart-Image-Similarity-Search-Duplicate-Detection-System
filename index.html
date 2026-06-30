@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Similarity Search</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Image Similarity Search</h1>
+
+    <input type="file" id="upload" accept="image/*">
+
+    <br><br>
+
+    <div id="previewContainer">
+    <img id="preview" width="300"> </div> 
+
+    <h2>Search Results</h2>
+    <div id="results"></div>
+
+    <h2>Best Match</h2>
+<div id="bestMatch"></div>
+
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script src="script.js"></script>
+</body>
+</html>
