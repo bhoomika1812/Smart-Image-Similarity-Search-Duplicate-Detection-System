@@ -93,23 +93,6 @@ function generateHistogram(img) {
 
 }
 
-function resizeImage(img) {
-
-    canvas.width = 32;
-    canvas.height = 32;
-
-    ctx.drawImage(img, 0, 0, 32, 32);
-
-    const imageData = ctx.getImageData(
-        0,
-        0,
-        32,
-        32
-    );
-
-    return imageData;
-}
-
 function compareHistograms(histogram1, histogram2) {
     let distance = 0;
     for (let i = 0; i < 256; i++) {
@@ -188,9 +171,34 @@ upload.addEventListener("change", function (event) {
 
     const uploadedHistogram = generateHistogram(img);
 
-
     const resizedImage = resizeImage(img);
+    console.log("Resized Image:");
     console.log(resizedImage);
+
+    const grayscaleValues = convertToGrayscale(resizedImage);
+    console.log("Grayscale Values:");
+    console.log(grayscaleValues);
+
+    const grayscaleMatrix = createMatrix(grayscaleValues);
+    console.log("Grayscale Matrix:");
+    console.log(grayscaleMatrix);
+
+    const dctMatrix = calculateDCTMatrix(grayscaleMatrix);
+    console.log("DCT Matrix:");
+    console.log(dctMatrix);
+
+    const lowFrequency = extractLowFrequency(dctMatrix);
+    console.log("Low Frequency Block:");
+    console.log(lowFrequency);
+
+    const average = calculateAverage(lowFrequency);
+    console.log("Average DCT Value:");
+    console.log(average);
+
+    const pHash = generatePHash(lowFrequency, average);
+    console.log("Perceptual Hash:");
+    console.log(pHash);
+    console.log("Hash Length:", pHash.length);
 
 
     const results = [];
@@ -263,3 +271,242 @@ const label = getSimilarityLabel(similarity);
 
         }
 );
+
+function resizeImage(img) {
+
+    // Resize canvas to 32 × 32 pixels
+    canvas.width = 32;
+    canvas.height = 32;
+
+    // Draw the image on the resized canvas
+    ctx.drawImage(img, 0, 0, 32, 32);
+
+    // Read the resized image pixels
+    const imageData = ctx.getImageData(
+        0,
+        0,
+        32,
+        32
+    );
+
+    return imageData;
+}
+
+function convertToGrayscale(imageData) {
+
+    //get all pixels
+    const pixels = imageData.data;
+
+    const grayscaleValues = [];
+
+    for (let i = 0; i < pixels.length; i += 4) {
+
+        const r = pixels[i];
+
+        const g = pixels[i + 1];
+
+        const b = pixels[i + 2];
+
+        //Calculate brightness
+        const gray =
+            0.299 * r +
+            0.587 * g +
+            0.114 * b;
+
+        //stores the gray value
+        grayscaleValues.push(gray);
+    }
+
+    return grayscaleValues;
+}
+
+function createMatrix(grayscaleValues) {
+
+    //create a empty matrix of 32 × 32 pixels
+    const matrix = [];
+
+    for (let row = 0; row < 32; row++) {
+
+        matrix[row] = [];
+
+        for (let col = 0; col < 32; col++) {
+
+            matrix[row][col] = grayscaleValues[row * 32 + col];
+            //grayscaleValues: This converts the flat array into a proper image matrix.
+
+        }
+
+    }
+
+    return matrix;
+}
+
+function createDCTMatrix() {
+
+    const dctMatrix = [];
+
+    for (let row = 0; row < 32; row++) {
+
+        dctMatrix[row] = [];
+
+        for (let col = 0; col < 32; col++) {
+
+            dctMatrix[row][col] = 0;
+
+        }
+    }
+
+    return dctMatrix;
+}
+
+function calculateDCTCoefficient(matrix, u, v) {
+
+    let sum = 0;
+
+    for (let x = 0; x < 32; x++) {
+
+        for (let y = 0; y < 32; y++) {
+
+            sum +=
+                matrix[x][y] *
+
+                Math.cos(
+                    ((2 * x + 1) * u * Math.PI) / 64   // calculates the cosine in the horizontal direction.
+                ) *
+
+                Math.cos(
+                    ((2 * y + 1) * v * Math.PI) / 64   // calculates the cosine in the vertical direction.
+                );
+
+        }
+
+    }
+
+    return sum;
+}
+
+function calculateDCTMatrix(grayscaleMatrix) {
+
+    const dctMatrix = createDCTMatrix();
+
+    for (let u = 0; u < 32; u++) {
+
+        for (let v = 0; v < 32; v++) {
+
+            dctMatrix[u][v] =
+                calculateDCTCoefficient(
+                    grayscaleMatrix,
+                    u,
+                    v
+                );              // Calculates one DCT value and stores it.
+
+        }
+
+    }
+
+    return dctMatrix;
+}
+
+function extractLowFrequency(dctMatrix) {
+
+    const lowFrequency = [];
+
+    for (let i = 0; i < 8; i++) {
+
+        lowFrequency[i] = [];
+
+        for (let j = 0; j < 8; j++) {
+
+            lowFrequency[i][j] = dctMatrix[i][j];
+
+        }
+
+    }
+
+    return lowFrequency;
+}
+
+function calculateAverage(lowFrequency) {
+
+    let sum = 0;
+    let count = 0;
+
+    for (let i = 0; i < 8; i++) {
+
+        for (let j = 0; j < 8; j++) {
+
+            // Skip the DC coefficient
+            if (i === 0 && j === 0)
+                continue;
+
+            sum += lowFrequency[i][j];
+            count++;
+        }
+    }
+
+    return sum / count;
+}
+
+function generatePHash(lowFrequency, average) {
+
+    let hash = "";
+
+    for (let i = 0; i < 8; i++) {
+
+        for (let j = 0; j < 8; j++) {
+
+            if (lowFrequency[i][j] > average) {
+
+                hash += "1";
+
+            } else {
+
+                hash += "0";
+
+            }
+
+        }
+
+    }
+
+    return hash;
+
+}
+
+function calculateHammingDistance(hash1, hash2) {
+
+    let distance = 0;
+
+    for (let i = 0; i < hash1.length; i++) {
+
+        if (hash1[i] !== hash2[i]) {
+
+            distance++;
+
+        }
+
+    }
+
+    return distance;
+}
+
+
+function generateImagePHash(img) {
+
+    const resizedImage = resizeImage(img);
+
+    const grayscaleValues = convertToGrayscale(resizedImage);
+
+    const grayscaleMatrix = createMatrix(grayscaleValues);
+
+    const dctMatrix = calculateDCTMatrix(grayscaleMatrix);
+
+    const lowFrequency = extractLowFrequency(dctMatrix);
+
+    const average = calculateAverage(lowFrequency);
+
+    const pHash = generatePHash(lowFrequency, average);
+
+    return pHash;
+
+}
