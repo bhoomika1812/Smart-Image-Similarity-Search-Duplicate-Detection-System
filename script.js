@@ -195,10 +195,10 @@ upload.addEventListener("change", function (event) {
     console.log("Average DCT Value:");
     console.log(average);
 
-    const pHash = generatePHash(lowFrequency, average);
+    const uploadedPHash = generatePHash(lowFrequency, average);
     console.log("Perceptual Hash:");
-    console.log(pHash);
-    console.log("Hash Length:", pHash.length);
+    console.log(uploadedPHash);
+    console.log("Hash Length:", uploadedPHash.length);
 
 
     const results = [];
@@ -208,6 +208,17 @@ upload.addEventListener("change", function (event) {
 
         const databaseImg = await loadDatabaseImage(imagePath);
 
+          // ---------- pHash ----------
+        const databasePHash = generateImagePHash(databaseImg);
+
+        const hammingDistance = calculateHammingDistance(
+    uploadedPHash,
+    databasePHash
+);
+
+const pHashSimilarity = hammingToSimilarity(hammingDistance);
+
+  // ---------- RGB ----------
         const databaseHistogram = generateHistogram(databaseImg);
 
         const distance = compareHistograms(
@@ -215,9 +226,31 @@ upload.addEventListener("change", function (event) {
             databaseHistogram
         );
 
+        const rgbSimilarity = distanceToSimilarity(distance);
+
+const combinedSimilarity = finalSimilarity(
+        rgbSimilarity,
+        pHashSimilarity
+    );
+
+console.log(
+    "pHash Similarity:",
+    pHashSimilarity
+);
+
+console.log(
+    imagePath,
+    "Hamming Distance:",
+    hammingDistance
+);
+
         results.push({
             image: imagePath,
-            distance: distance
+            distance: distance,
+            hammingDistance: hammingDistance,
+            rgbSimilarity: rgbSimilarity,
+            pHashSimilarity: pHashSimilarity,
+             combinedSimilarity: combinedSimilarity
         });
 
         console.log(imagePath, "Similarity Distance:", distance);
@@ -236,9 +269,15 @@ const bestMatch = results[0];
 // Display the Best Match
 bestMatchContainer.innerHTML = `
 <div class="card">
-    <img src="${bestMatch.image}" width="250">
-    <h3>Best Match</h3>
-    <p>Distance: ${bestMatch.distance.toFixed(2)}</p>
+<img src="${bestMatch.image}" width="250">
+
+<p>Similarity: ${distanceToSimilarity(bestMatch.distance).toFixed(2)}%</p>
+
+<p>RGB Distance: ${bestMatch.distance.toFixed(2)}</p>
+
+<p>pHash Distance: ${bestMatch.hammingDistance}</p>
+
+<p>${getSimilarityLabel(distanceToSimilarity(bestMatch.distance))}</p>
 </div>
 `;
 
@@ -253,15 +292,28 @@ results.forEach((result, index) => {
 
 const label = getSimilarityLabel(similarity);
 
-    resultsContainer.innerHTML += `
-    <div class="card">
-        <h3>Rank ${index + 1}</h3>
-        <img src="${result.image}" width="150">
-        <p>Distance: ${result.distance.toFixed(2)}</p>
-        <p>Similarity: ${similarity.toFixed(2)}%</p>
-        <p>${label}</p>
-    </div>
-    `;
+resultsContainer.innerHTML += `
+<div class="card">
+
+<img src="${result.image}" width="150">
+
+<p><strong>Final Similarity:</strong>
+${result.combinedSimilarity.toFixed(2)}%</p>
+
+<p>RGB Distance: ${result.distance.toFixed(2)}</p>
+
+<p>RGB Similarity: ${result.rgbSimilarity.toFixed(2)}%</p>
+
+<p>pHash Similarity: ${result.pHashSimilarity.toFixed(2)}%</p>
+
+<p>Hamming Distance: ${result.hammingDistance}</p>
+
+<p>${getSimilarityLabel(distanceToSimilarity(result.distance))}</p>
+
+<p>${getSimilarityLabel(result.combinedSimilarity)}</p>
+
+</div>
+`;
 
 });
 
@@ -488,6 +540,22 @@ function calculateHammingDistance(hash1, hash2) {
     }
 
     return distance;
+}
+
+function hammingToSimilarity(hammingDistance) {
+
+    return ((64 - hammingDistance) / 64) * 100;
+
+}
+
+function finalSimilarity(rgbSimilarity, pHashSimilarity) {
+
+    const finalScore =
+        (rgbSimilarity * 0.6) +
+        (pHashSimilarity * 0.4);
+
+    return finalScore;
+
 }
 
 
