@@ -10,6 +10,24 @@ const resultsContainer = document.getElementById("results");
 const bestMatchContainer =
 document.getElementById("bestMatch");
 
+const resetBtn = document.getElementById("resetBtn");
+
+resetBtn.addEventListener("click", function(){
+
+    upload.value="";
+
+    preview.src="";
+
+    preview.style.display="none";
+
+    bestMatchContainer.innerHTML="";
+
+    resultsContainer.innerHTML="";
+
+    summary.innerHTML="";
+
+});
+
 const databaseImages = [
     "images/cat1.jfif",
     "images/cat2.jfif",
@@ -259,9 +277,20 @@ console.log(
     // console.log(results);
     
     // Sort the results according to distance
-results.sort((a, b) => a.distance - b.distance);
+results.sort(
+    (a, b) => b.combinedSimilarity - a.combinedSimilarity
+);
 
+summary.innerHTML = `
+<h2>Search Summary</h2>
 
+<p>Total Images : ${databaseImages.length}</p>
+
+<p>Best Match : ${results[0].image}</p>
+
+<p>Final Similarity :
+${results[0].combinedSimilarity.toFixed(2)}%</p>
+`;
 
 console.log("Sorted Results:");
 console.log(results);
@@ -291,9 +320,8 @@ resultsContainer.innerHTML = "";
 results.forEach((result, index) => {
 
     const similarity = distanceToSimilarity(result.distance);
-    const bestSimilarity = distanceToSimilarity(bestMatch.distance);
 
-const label = getSimilarityLabel(similarity);
+const label = getSimilarityLabel(result.combinedSimilarity);
 
 resultsContainer.innerHTML += `
 <div class="card">
@@ -310,8 +338,6 @@ ${result.combinedSimilarity.toFixed(2)}%</p>
 <p>pHash Similarity: ${result.pHashSimilarity.toFixed(2)}%</p>
 
 <p>Hamming Distance: ${result.hammingDistance}</p>
-
-<p>${getSimilarityLabel(distanceToSimilarity(result.distance))}</p>
 
 <p>${getSimilarityLabel(result.combinedSimilarity)}</p>
 
