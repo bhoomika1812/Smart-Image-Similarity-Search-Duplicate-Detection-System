@@ -1,3 +1,4 @@
+const summary = document.getElementById("summary");
 const upload = document.getElementById("upload");
 const preview = document.getElementById("preview");
 const canvas = document.getElementById("canvas");
@@ -259,6 +260,16 @@ console.log(
     
     // Sort the results according to distance
 results.sort((a, b) => a.distance - b.distance);
+
+summary.innerHTML = `
+<h2>Search Summary</h2>
+
+<p>Total Images : ${databaseImages.length}</p>
+
+<p>Best Match : ${results[0].image}</p>
+
+<p>Similarity : ${results[0].combinedSimilarity.toFixed(2)}%</p>
+`;
 
 console.log("Sorted Results:");
 console.log(results);
