@@ -109,3 +109,30 @@ h2{
     border-radius:12px;
     box-shadow:0 4px 10px rgba(0,0,0,.15);
 }
+
+footer{
+    margin-top:60px;
+    background:#ffffff;
+    color:rgb(0, 0, 0);
+    padding:40px 20px;
+}
+
+.footer-container{
+    display:flex;
+    justify-content:space-around;
+    flex-wrap:wrap;
+    gap:30px;
+}
+
+.footer-box{
+    width:250px;
+}
+
+.footer-box h3{
+    color:#4CAF50;
+    margin-bottom:15px;
+}
+
+.footer-box p{
+    margin:8px 0;
+}
