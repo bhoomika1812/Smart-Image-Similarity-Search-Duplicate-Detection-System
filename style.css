@@ -14,6 +14,42 @@ h2{
     margin-top: 30px;
 }
 
+.upload-btn{
+
+    display:inline-block;
+
+    padding:14px 28px;
+
+    margin:20px;
+
+    background:#4CAF50;
+
+    color:white;
+
+    border-radius:10px;
+
+    cursor:pointer;
+
+    font-size:18px;
+
+    font-weight:bold;
+
+    transition:.3s;
+
+    box-shadow:0 5px 15px rgba(0,0,0,.2);
+
+}
+
+.upload-btn:hover{
+
+    background:#43a047;
+
+    transform:translateY(-3px);
+
+    box-shadow:0 8px 18px rgba(0,0,0,.3);
+
+}
+
 /* Uploaded Image Container */
 #previewContainer{
     display: flex;
