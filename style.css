@@ -15,39 +15,24 @@ h2{
 }
 
 .upload-btn{
-
     display:inline-block;
-
     padding:14px 28px;
-
     margin:20px;
-
     background:#4CAF50;
-
+    background: linear-gradient(135deg, #4facfe, #00c6fb);
     color:white;
-
     border-radius:10px;
-
     cursor:pointer;
-
     font-size:18px;
-
     font-weight:bold;
-
     transition:.3s;
-
     box-shadow:0 5px 15px rgba(0,0,0,.2);
-
 }
 
 .upload-btn:hover{
-
     background:#43a047;
-
     transform:translateY(-3px);
-
     box-shadow:0 8px 18px rgba(0,0,0,.3);
-
 }
 
 /* Uploaded Image Container */
@@ -144,6 +129,27 @@ h2{
     width:60%;
     border-radius:12px;
     box-shadow:0 4px 10px rgba(0,0,0,.15);
+}
+
+#resetBtn{
+    padding:14px 28px;
+    margin:20px;
+    border:none;
+    border-radius:10px;
+    background:#ff5252;
+    color:white;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+    box-shadow:0 5px 15px rgba(0,0,0,.2);
+    background: linear-gradient(135deg, #ff6a6a, #ee0979);
+}
+
+#resetBtn:hover{
+    background:#e53935;
+    transform:translateY(-3px);
+    box-shadow:0 8px 18px rgba(0,0,0,.3);
 }
 
 footer{
