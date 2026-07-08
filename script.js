@@ -607,13 +607,3 @@ function generateImagePHash(img) {
     return pHash;
 
 }
-
-// dHash functions
-
-function generateImageDHash(img) {
-
-    const resizedImage = resizeImage(img, 9, 8);
-
-    const grayscaleValues = convertToGrayscale(resizedImage);
-
-}
