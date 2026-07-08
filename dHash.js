@@ -1,11 +1,3 @@
-function generateDHash(grayscaleValues) {
-
-    let hash = "";
-
-    return hash;
-
-}
-
 function generateImageDHash(img) {
 
     const resizedImage = resizeImage(img, 9, 8);
@@ -17,3 +9,13 @@ function generateImageDHash(img) {
     return dHash;
 
 }
+
+function generateDHash(grayscaleValues) {
+
+    let hash = "";
+
+    return hash;
+
+}
+
+
