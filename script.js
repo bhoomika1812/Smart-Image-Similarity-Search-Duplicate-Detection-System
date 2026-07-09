@@ -190,7 +190,7 @@ upload.addEventListener("change", function (event) {
 
     const uploadedHistogram = generateHistogram(img);
 
-    const resizedImage = resizeImage(img);
+    const resizedImage = resizeImage(img, 32, 32);
     console.log("Resized Image:");
     console.log(resizedImage);
 
@@ -219,6 +219,11 @@ upload.addEventListener("change", function (event) {
     console.log(uploadedPHash);
     console.log("Hash Length:", uploadedPHash.length);
 
+    const uploadedDHash = generateImageDHash(img);
+    console.log("Uploaded dHash:");
+console.log(uploadedDHash);
+console.log("dHash Length:", uploadedDHash.length);
+
 
     const results = [];
     
@@ -237,6 +242,23 @@ upload.addEventListener("change", function (event) {
 
 const pHashSimilarity = hammingToSimilarity(hammingDistance);
 
+
+// ---------- dHash ----------
+
+const databaseDHash = generateImageDHash(databaseImg);
+console.log(imagePath, "Database dHash:");
+console.log(databaseDHash);
+
+const dHashDistance = calculateHammingDistance(
+    uploadedDHash,
+    databaseDHash
+);
+
+const dHashSimilarity = hammingToSimilarity(
+    dHashDistance
+);
+
+
   // ---------- RGB ----------
         const databaseHistogram = generateHistogram(databaseImg);
 
@@ -249,7 +271,8 @@ const pHashSimilarity = hammingToSimilarity(hammingDistance);
 
 const combinedSimilarity = finalSimilarity(
         rgbSimilarity,
-        pHashSimilarity
+        pHashSimilarity,
+        dHashSimilarity
     );
 
 console.log(
@@ -269,7 +292,9 @@ console.log(
             hammingDistance: hammingDistance,
             rgbSimilarity: rgbSimilarity,
             pHashSimilarity: pHashSimilarity,
-             combinedSimilarity: combinedSimilarity
+             combinedSimilarity: combinedSimilarity,
+             dHashDistance: dHashDistance,
+             dHashSimilarity: dHashSimilarity
         });
 
         console.log(imagePath, "Similarity Distance:", distance);
@@ -308,6 +333,9 @@ bestMatchContainer.innerHTML = `
 <p>RGB Distance: ${bestMatch.distance.toFixed(2)}</p>
 
 <p>pHash Distance: ${bestMatch.hammingDistance}</p>
+
+<p>dHash Distance: ${bestMatch.dHashDistance}</p>
+<p>dHash Similarity: ${bestMatch.dHashSimilarity.toFixed(2)}%</p>
 
 <p>${getSimilarityLabel(distanceToSimilarity(bestMatch.distance))}</p>
 </div>
