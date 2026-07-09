@@ -1,7 +1,11 @@
+console.log("Script loaded");
 const summary = document.getElementById("summary");
 const upload = document.getElementById("upload");
 const preview = document.getElementById("preview");
 const canvas = document.getElementById("canvas");
+console.log(upload);
+console.log(preview);
+console.log(canvas);
 const ctx = canvas.getContext("2d", {
     willReadFrequently: true
 });
@@ -169,6 +173,8 @@ function getSimilarityLabel(similarity){
 
 // When the user selects an image
 upload.addEventListener("change", function (event) {
+
+    console.log("File selected!");
 
     const file = event.target.files[0];
 
