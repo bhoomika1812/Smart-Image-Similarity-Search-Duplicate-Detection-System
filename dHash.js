@@ -28,6 +28,8 @@ function generateDHash(grayscaleValues) {
             } else {
                 hash += "0";
             }
+
+            const dHashSimilarity = hammingToSimilarity(dHashDistance); 
         }
     }
 
