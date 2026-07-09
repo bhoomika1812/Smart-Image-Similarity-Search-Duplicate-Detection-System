@@ -254,6 +254,8 @@ const dHashDistance = calculateHammingDistance(
     databaseDHash
 );
 
+console.log(imagePath, "dHash Distance:", dHashDistance);
+
 const dHashSimilarity = hammingToSimilarity(
     dHashDistance
 );
@@ -381,24 +383,14 @@ ${result.combinedSimilarity.toFixed(2)}%</p>
         }
 );
 
-function resizeImage(img) {
+function resizeImage(img, width, height) {
 
-    // Resize canvas to 32 × 32 pixels
-    canvas.width = 32;
-    canvas.height = 32;
+    canvas.width = width;
+    canvas.height = height;
 
-    // Draw the image on the resized canvas
-    ctx.drawImage(img, 0, 0, 32, 32);
+    ctx.drawImage(img, 0, 0, width, height);
 
-    // Read the resized image pixels
-    const imageData = ctx.getImageData(
-        0,
-        0,
-        32,
-        32
-    );
-
-    return imageData;
+    return ctx.getImageData(0, 0, width, height);
 }
 
 function convertToGrayscale(imageData) {
@@ -618,7 +610,7 @@ function finalSimilarity(rgbSimilarity, pHashSimilarity) {
 
 function generateImagePHash(img) {
 
-    const resizedImage = resizeImage(img);
+    const resizedImage = resizeImage(img, 32, 32);
 
     const grayscaleValues = convertToGrayscale(resizedImage);
 
