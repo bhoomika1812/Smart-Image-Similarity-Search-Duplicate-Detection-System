@@ -74,3 +74,61 @@ function calculateContrast(data) {
     return Math.sqrt(variance);
 
 }
+
+/*This estimates how detailed the image is. Busy textures (grass, fur, leaves)
+ produce a higher edge density than smooth areas (sky, plain walls).*/
+
+function calculateEdgeDensity(data, width, height) {
+
+    let edges = 0;
+
+    for (let y = 0; y < height - 1; y++) {
+
+        for (let x = 0; x < width - 1; x++) {
+
+            const index = (y * width + x) * 4;
+
+            const gray =
+                0.299 * data[index] +
+                0.587 * data[index + 1] +
+                0.114 * data[index + 2];
+
+            const right =
+                0.299 * data[index + 4] +
+                0.587 * data[index + 5] +
+                0.114 * data[index + 6];
+
+            if (Math.abs(gray - right) > 30) {
+                edges++;
+            }
+
+        }
+
+    }
+
+    return edges / (width * height);
+
+}
+
+//feature comparison function that returns a similarity score between 0 and 100.
+//higher score indicates more similarity.
+function compareFeatures(feature1, feature2) {
+
+    const brightnessDiff = Math.abs(feature1.brightness - feature2.brightness);
+    const contrastDiff = Math.abs(feature1.contrast - feature2.contrast);
+    const edgeDiff = Math.abs(feature1.edgeDensity - feature2.edgeDensity);
+
+    // Normalize differences
+    const brightnessScore = Math.max(0, 100 - (brightnessDiff / 255) * 100);
+
+    const contrastScore = Math.max(0, 100 - (contrastDiff / 128) * 100);
+
+    const edgeScore = Math.max(0, 100 - (edgeDiff * 100));
+
+    const finalScore =
+        (brightnessScore * 0.4) +
+        (contrastScore * 0.3) +
+        (edgeScore * 0.3);
+
+    return finalScore;
+}
