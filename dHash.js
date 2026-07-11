@@ -27,9 +27,7 @@ function generateDHash(grayscaleValues) {
                 hash += "1";
             } else {
                 hash += "0";
-            }
-
-            const dHashSimilarity = hammingToSimilarity(dHashDistance); 
+            } 
         }
     }
 
