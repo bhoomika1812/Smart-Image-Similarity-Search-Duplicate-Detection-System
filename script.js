@@ -1,4 +1,4 @@
-console.log("Script loaded");
+﻿console.log("Script loaded");
 const summary = document.getElementById("summary");
 const upload = document.getElementById("upload");
 const preview = document.getElementById("preview");
@@ -11,25 +11,16 @@ const ctx = canvas.getContext("2d", {
 });
 const resultsContainer = document.getElementById("results");
 
-const bestMatchContainer =
-document.getElementById("bestMatch");
-
+const bestMatchContainer = document.getElementById("bestMatch");
 const resetBtn = document.getElementById("resetBtn");
 
-resetBtn.addEventListener("click", function(){
-
-    upload.value="";
-
-    preview.src="";
-
-    preview.style.display="none";
-
-    bestMatchContainer.innerHTML="";
-
-    resultsContainer.innerHTML="";
-
-    summary.innerHTML="";
-
+resetBtn.addEventListener("click", function () {
+    upload.value = "";
+    preview.src = "";
+    preview.style.display = "none";
+    bestMatchContainer.innerHTML = "";
+    resultsContainer.innerHTML = "";
+    summary.innerHTML = "";
 });
 
 const databaseImages = [
@@ -44,7 +35,6 @@ const databaseImages = [
 ];
 
 function loadDatabaseImage(imagePath) {
-
     return new Promise((resolve) => {
         const img = new Image();
         img.src = imagePath;
@@ -54,267 +44,192 @@ function loadDatabaseImage(imagePath) {
         img.onerror = function () {
             console.error("Could not load image:", imagePath);
         };
-    }
-);
+    });
 }
 
 function generateHistogram(img) {
-    // Set canvas size equal to image size
-            canvas.width = img.width;
-            canvas.height = img.height;
+    canvas.width = img.width;
+    canvas.height = img.height;
 
-            console.log("Canvas Width:", canvas.width);
-            console.log("Canvas Height:", canvas.height);
+    console.log("Canvas Width:", canvas.width);
+    console.log("Canvas Height:", canvas.height);
 
-            // Draw image on canvas
-            ctx.drawImage(img, 0, 0);
+    ctx.drawImage(img, 0, 0);
 
-            // Read pixel data from canvas
-            const imageData = ctx.getImageData(
-                0,
-                0,
-                canvas.width,
-                canvas.height
-            );
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    console.log("Image Data:", imageData);
 
-            console.log("Image Data:", imageData);
+    const pixels = imageData.data;
+    console.log("First Pixel:");
+    console.log("R =", pixels[0]);
+    console.log("G =", pixels[1]);
+    console.log("B =", pixels[2]);
+    console.log("A =", pixels[3]);
 
-            // Store all pixel values
-            const pixels = imageData.data;
+    const redHistogram = new Array(256).fill(0);
+    const greenHistogram = new Array(256).fill(0);
+    const blueHistogram = new Array(256).fill(0);
 
-            // Display the first pixel values
-            console.log("First Pixel:");
-            console.log("R =", pixels[0]);
-            console.log("G =", pixels[1]);
-            console.log("B =", pixels[2]);
-            console.log("A =", pixels[3]);
+    for (let i = 0; i < pixels.length; i += 4) {
+        const r = pixels[i];
+        const g = pixels[i + 1];
+        const b = pixels[i + 2];
 
-            // -----------------------------
-            // Create RGB Histogram Arrays
-            // -----------------------------
-            const redHistogram = new Array(256).fill(0);
-            const greenHistogram = new Array(256).fill(0);
-            const blueHistogram = new Array(256).fill(0);
+        redHistogram[r]++;
+        greenHistogram[g]++;
+        blueHistogram[b]++;
+    }
 
-            // Read every pixel and update histograms
-            for (let i = 0; i < pixels.length; i += 4) {
-
-                const r = pixels[i];
-                const g = pixels[i + 1];
-                const b = pixels[i + 2];
-
-                redHistogram[r]++;
-                greenHistogram[g]++;
-                blueHistogram[b]++;
-            }
-
-            return {
-    redHistogram,
-    greenHistogram,
-    blueHistogram
-};
-
+    return {
+        redHistogram,
+        greenHistogram,
+        blueHistogram
+    };
 }
 
 function compareHistograms(histogram1, histogram2) {
     let distance = 0;
     for (let i = 0; i < 256; i++) {
-
-    distance += Math.pow(
-        histogram1.redHistogram[i] - histogram2.redHistogram[i],
-        2
-    );
-}
-for (let i = 0; i < 256; i++) {
-
-    distance += Math.pow(
-        histogram1.greenHistogram[i] - histogram2.greenHistogram[i],
-        2
-    );
-}
-for (let i = 0; i < 256; i++) {
-
-    distance += Math.pow(
-        histogram1.blueHistogram[i] - histogram2.blueHistogram[i],
-        2
-    );
-}
-distance = Math.sqrt(distance);
-return distance;
+        distance += Math.pow(histogram1.redHistogram[i] - histogram2.redHistogram[i], 2);
+    }
+    for (let i = 0; i < 256; i++) {
+        distance += Math.pow(histogram1.greenHistogram[i] - histogram2.greenHistogram[i], 2);
+    }
+    for (let i = 0; i < 256; i++) {
+        distance += Math.pow(histogram1.blueHistogram[i] - histogram2.blueHistogram[i], 2);
+    }
+    distance = Math.sqrt(distance);
+    return distance;
 }
 
-function distanceToSimilarity(distance){
-
-const similarity =
-100/(1 + distance/1000);
-
-return similarity;
-
+function distanceToSimilarity(distance) {
+    const similarity = 100 / (1 + distance / 1000);
+    return similarity;
 }
 
-function getSimilarityLabel(similarity){
-
-    if(similarity>=90)
+function getSimilarityLabel(similarity) {
+    if (similarity >= 90) {
         return "Highly Similar";
-
-    else if(similarity>=75)
+    } else if (similarity >= 75) {
         return "Very Similar";
-
-    else if(similarity>=50)
+    } else if (similarity >= 50) {
         return "Moderately Similar";
-
-    else if(similarity>=25)
+    } else if (similarity >= 25) {
         return "Low Similarity";
-
-    else
+    } else {
         return "Different";
-
+    }
 }
 
-// When the user selects an image
 upload.addEventListener("change", function (event) {
-
     console.log("File selected!");
 
     const file = event.target.files[0];
 
     if (file) {
-
-        // Create a temporary URL for the uploaded image
         const imageURL = URL.createObjectURL(file);
 
-        // Display the uploaded image
         preview.src = imageURL;
         preview.style.display = "block";
 
-        // Create an Image object
         const img = new Image();
         img.src = imageURL;
 
-        // Wait until the image is fully loaded
         img.onload = async function () {
+            const uploadedHistogram = generateHistogram(img);
 
-    const uploadedHistogram = generateHistogram(img);
+            const resizedImage = resizeImage(img, 32, 32);
+            console.log("Resized Image:");
+            console.log(resizedImage);
 
-    const resizedImage = resizeImage(img, 32, 32);
-    console.log("Resized Image:");
-    console.log(resizedImage);
+            const grayscaleValues = convertToGrayscale(resizedImage);
+            console.log("Grayscale Values:");
+            console.log(grayscaleValues);
 
-    const grayscaleValues = convertToGrayscale(resizedImage);
-    console.log("Grayscale Values:");
-    console.log(grayscaleValues);
+            const grayscaleMatrix = createMatrix(grayscaleValues);
+            console.log("Grayscale Matrix:");
+            console.log(grayscaleMatrix);
 
-    const grayscaleMatrix = createMatrix(grayscaleValues);
-    console.log("Grayscale Matrix:");
-    console.log(grayscaleMatrix);
+            const dctMatrix = calculateDCTMatrix(grayscaleMatrix);
+            console.log("DCT Matrix:");
+            console.log(dctMatrix);
 
-    const dctMatrix = calculateDCTMatrix(grayscaleMatrix);
-    console.log("DCT Matrix:");
-    console.log(dctMatrix);
+            const lowFrequency = extractLowFrequency(dctMatrix);
+            console.log("Low Frequency Block:");
+            console.log(lowFrequency);
 
-    const lowFrequency = extractLowFrequency(dctMatrix);
-    console.log("Low Frequency Block:");
-    console.log(lowFrequency);
+            const average = calculateAverage(lowFrequency);
+            console.log("Average DCT Value:");
+            console.log(average);
 
-    const average = calculateAverage(lowFrequency);
-    console.log("Average DCT Value:");
-    console.log(average);
+            const uploadedPHash = generatePHash(lowFrequency, average);
+            console.log("Perceptual Hash:");
+            console.log(uploadedPHash);
+            console.log("Hash Length:", uploadedPHash.length);
 
-    const uploadedPHash = generatePHash(lowFrequency, average);
-    console.log("Perceptual Hash:");
-    console.log(uploadedPHash);
-    console.log("Hash Length:", uploadedPHash.length);
+            const uploadedDHash = generateImageDHash(img);
+            console.log("Uploaded dHash:");
+            console.log(uploadedDHash);
+            console.log("dHash Length:", uploadedDHash.length);
 
-    const uploadedDHash = generateImageDHash(img);
-    console.log("Uploaded dHash:");
-console.log(uploadedDHash);
-console.log("dHash Length:", uploadedDHash.length);
+            const uploadedFeatures = extractFeatures(img);
+            const results = [];
 
+            for (const imagePath of databaseImages) {
+                const databaseImg = await loadDatabaseImage(imagePath);
 
-    const results = [];
-    
+                const databasePHash = generateImagePHash(databaseImg);
+                const pHashDistance = calculateHammingDistance(uploadedPHash, databasePHash);
+                const pHashSimilarity = hammingToSimilarity(pHashDistance);
 
-    for (const imagePath of databaseImages) {
+                const databaseDHash = generateImageDHash(databaseImg);
+                console.log(imagePath, "Database dHash:");
+                console.log(databaseDHash);
 
-        const databaseImg = await loadDatabaseImage(imagePath);
+                const dHashDistance = calculateHammingDistance(uploadedDHash, databaseDHash);
+                const dHashSimilarity = hammingToSimilarity(dHashDistance);
 
-          // ---------- pHash ----------
-        const databasePHash = generateImagePHash(databaseImg);
+                const databaseHistogram = generateHistogram(databaseImg);
+                const distance = compareHistograms(uploadedHistogram, databaseHistogram);
+                const rgbSimilarity = distanceToSimilarity(distance);
 
-        const hammingDistance = calculateHammingDistance(
-    uploadedPHash,
-    databasePHash
-);
+                const databaseFeatures = extractFeatures(databaseImg);
+                const featureSimilarity = compareFeatures(uploadedFeatures, databaseFeatures);
+                const combinedSimilarity = finalSimilarity(
+                    rgbSimilarity,
+                    pHashSimilarity,
+                    dHashSimilarity,
+                    featureSimilarity
+                );
 
-const pHashSimilarity = hammingToSimilarity(hammingDistance);
+                console.log(imagePath, "Combined Similarity:", combinedSimilarity);
+                console.log("Histogram Distance:", distance);
+                console.log(imagePath, "pHash Distance:", pHashDistance);
+                console.log(imagePath, "dHash Distance:", dHashDistance);
+                console.log(imagePath, "pHash Similarity:", pHashSimilarity);
+                console.log(imagePath, "RGB Similarity:", rgbSimilarity);
+                console.log(imagePath, "Database Features:", databaseFeatures);
+                console.log("Uploaded Features:", uploadedFeatures);
+                console.log(imagePath, "Feature Similarity:", featureSimilarity);
 
+                results.push({
+                    image: imagePath,
+                    distance: distance,
+                    hammingDistance: pHashDistance,
+                    rgbSimilarity: rgbSimilarity,
+                    pHashSimilarity: pHashSimilarity,
+                    dHashDistance: dHashDistance,
+                    dHashSimilarity: dHashSimilarity,
+                    combinedSimilarity: combinedSimilarity,
+                    featureSimilarity: featureSimilarity
+                });
 
-// ---------- dHash ----------
+                console.log(imagePath, "Similarity Distance:", distance);
+            }
 
-const databaseDHash = generateImageDHash(databaseImg);
-console.log(imagePath, "Database dHash:");
-console.log(databaseDHash);
+            results.sort((a, b) => b.combinedSimilarity - a.combinedSimilarity);
 
-const dHashDistance = calculateHammingDistance(
-    uploadedDHash,
-    databaseDHash
-);
-
-console.log(imagePath, "dHash Distance:", dHashDistance);
-
-const dHashSimilarity = hammingToSimilarity(
-    dHashDistance
-);
-
-
-  // ---------- RGB ----------
-        const databaseHistogram = generateHistogram(databaseImg);
-
-        const distance = compareHistograms(
-            uploadedHistogram,
-            databaseHistogram
-        );
-
-        const rgbSimilarity = distanceToSimilarity(distance);
-
-const combinedSimilarity = finalSimilarity(
-        rgbSimilarity,
-        pHashSimilarity,
-        dHashSimilarity
-    );
-
-console.log(
-    "pHash Similarity:",
-    pHashSimilarity
-);
-
-console.log(
-    imagePath,
-    "Hamming Distance:",
-    hammingDistance
-);
-
-        results.push({
-            image: imagePath,
-            distance: distance,
-            hammingDistance: hammingDistance,
-            rgbSimilarity: rgbSimilarity,
-            pHashSimilarity: pHashSimilarity,
-             combinedSimilarity: combinedSimilarity,
-             dHashDistance: dHashDistance,
-             dHashSimilarity: dHashSimilarity
-        });
-
-        console.log(imagePath, "Similarity Distance:", distance);
-    }
-    // console.log(results);
-    
-    // Sort the results according to distance
-results.sort(
-    (a, b) => b.combinedSimilarity - a.combinedSimilarity
-);
-
-summary.innerHTML = `
+            summary.innerHTML = `
 <h2>Search Summary</h2>
 
 <p>Total Images : ${databaseImages.length}</p>
@@ -325,14 +240,12 @@ summary.innerHTML = `
 ${results[0].combinedSimilarity.toFixed(2)}%</p>
 `;
 
-console.log("Sorted Results:");
-console.log(results);
+            console.log("Sorted Results:");
+            console.log(results);
 
-// First image is the best match
-const bestMatch = results[0];
+            const bestMatch = results[0];
 
-// Display the Best Match
-bestMatchContainer.innerHTML = `
+            bestMatchContainer.innerHTML = `
 <div class="card">
 <img src="${bestMatch.image}" width="250">
 
@@ -349,17 +262,13 @@ bestMatchContainer.innerHTML = `
 </div>
 `;
 
-// Clear previous search results
-resultsContainer.innerHTML = "";
+            resultsContainer.innerHTML = "";
 
-// Display all images in ranked order
-results.forEach((result, index) => {
+            results.forEach((result) => {
+                const similarity = distanceToSimilarity(result.distance);
+                const label = getSimilarityLabel(result.combinedSimilarity);
 
-    const similarity = distanceToSimilarity(result.distance);
-
-const label = getSimilarityLabel(result.combinedSimilarity);
-
-resultsContainer.innerHTML += `
+                resultsContainer.innerHTML += `
 <div class="card">
 
 <img src="${result.image}" width="150">
@@ -379,22 +288,18 @@ ${result.combinedSimilarity.toFixed(2)}%</p>
 
 <p>dHash Distance: ${result.dHashDistance}</p>
 
+<p>Feature Similarity: ${result.featureSimilarity.toFixed(2)}%</p>
+
 <p>${getSimilarityLabel(result.combinedSimilarity)}</p>
 
 </div>
 `;
-
+            });
+        };
+    }
 });
 
-};
-
-};
-
-        }
-);
-
 function resizeImage(img, width, height) {
-
     canvas.width = width;
     canvas.height = height;
 
@@ -404,27 +309,15 @@ function resizeImage(img, width, height) {
 }
 
 function convertToGrayscale(imageData) {
-
-    //get all pixels
     const pixels = imageData.data;
-
     const grayscaleValues = [];
 
     for (let i = 0; i < pixels.length; i += 4) {
-
         const r = pixels[i];
-
         const g = pixels[i + 1];
-
         const b = pixels[i + 2];
 
-        //Calculate brightness
-        const gray =
-            0.299 * r +
-            0.587 * g +
-            0.114 * b;
-
-        //stores the gray value
+        const gray = 0.299 * r + 0.587 * g + 0.114 * b;
         grayscaleValues.push(gray);
     }
 
@@ -432,38 +325,27 @@ function convertToGrayscale(imageData) {
 }
 
 function createMatrix(grayscaleValues) {
-
-    //create a empty matrix of 32 × 32 pixels
     const matrix = [];
 
     for (let row = 0; row < 32; row++) {
-
         matrix[row] = [];
 
         for (let col = 0; col < 32; col++) {
-
             matrix[row][col] = grayscaleValues[row * 32 + col];
-            //grayscaleValues: This converts the flat array into a proper image matrix.
-
         }
-
     }
 
     return matrix;
 }
 
 function createDCTMatrix() {
-
     const dctMatrix = [];
 
     for (let row = 0; row < 32; row++) {
-
         dctMatrix[row] = [];
 
         for (let col = 0; col < 32; col++) {
-
             dctMatrix[row][col] = 0;
-
         }
     }
 
@@ -471,84 +353,52 @@ function createDCTMatrix() {
 }
 
 function calculateDCTCoefficient(matrix, u, v) {
-
     let sum = 0;
 
     for (let x = 0; x < 32; x++) {
-
         for (let y = 0; y < 32; y++) {
-
-            sum +=
-                matrix[x][y] *
-
-                Math.cos(
-                    ((2 * x + 1) * u * Math.PI) / 64   // calculates the cosine in the horizontal direction.
-                ) *
-
-                Math.cos(
-                    ((2 * y + 1) * v * Math.PI) / 64   // calculates the cosine in the vertical direction.
-                );
-
+            sum += matrix[x][y] * Math.cos(((2 * x + 1) * u * Math.PI) / 64) * Math.cos(((2 * y + 1) * v * Math.PI) / 64);
         }
-
     }
 
     return sum;
 }
 
 function calculateDCTMatrix(grayscaleMatrix) {
-
     const dctMatrix = createDCTMatrix();
 
     for (let u = 0; u < 32; u++) {
-
         for (let v = 0; v < 32; v++) {
-
-            dctMatrix[u][v] =
-                calculateDCTCoefficient(
-                    grayscaleMatrix,
-                    u,
-                    v
-                );              // Calculates one DCT value and stores it.
-
+            dctMatrix[u][v] = calculateDCTCoefficient(grayscaleMatrix, u, v);
         }
-
     }
 
     return dctMatrix;
 }
 
 function extractLowFrequency(dctMatrix) {
-
     const lowFrequency = [];
 
     for (let i = 0; i < 8; i++) {
-
         lowFrequency[i] = [];
 
         for (let j = 0; j < 8; j++) {
-
             lowFrequency[i][j] = dctMatrix[i][j];
-
         }
-
     }
 
     return lowFrequency;
 }
 
 function calculateAverage(lowFrequency) {
-
     let sum = 0;
     let count = 0;
 
     for (let i = 0; i < 8; i++) {
-
         for (let j = 0; j < 8; j++) {
-
-            // Skip the DC coefficient
-            if (i === 0 && j === 0)
+            if (i === 0 && j === 0) {
                 continue;
+            }
 
             sum += lowFrequency[i][j];
             count++;
@@ -559,81 +409,54 @@ function calculateAverage(lowFrequency) {
 }
 
 function generatePHash(lowFrequency, average) {
-
     let hash = "";
 
     for (let i = 0; i < 8; i++) {
-
         for (let j = 0; j < 8; j++) {
-
             if (lowFrequency[i][j] > average) {
-
                 hash += "1";
-
             } else {
-
                 hash += "0";
-
             }
-
         }
-
     }
 
     return hash;
-
 }
 
 function calculateHammingDistance(hash1, hash2) {
-
     let distance = 0;
 
     for (let i = 0; i < hash1.length; i++) {
-
         if (hash1[i] !== hash2[i]) {
-
             distance++;
-
         }
-
     }
 
     return distance;
 }
 
 function hammingToSimilarity(hammingDistance) {
-
     return ((64 - hammingDistance) / 64) * 100;
-
 }
 
-function finalSimilarity(rgbSimilarity, pHashSimilarity, dHashSimilarity) {
-
+function finalSimilarity(rgbSimilarity, pHashSimilarity, dHashSimilarity, featureSimilarity) {
     const finalScore =
-        (rgbSimilarity * 0.4) +
-        (pHashSimilarity * 0.3) +
-        (dHashSimilarity * 0.3);  // Adjust weights as needed
+        rgbSimilarity * 0.30 +
+        pHashSimilarity * 0.30 +
+        dHashSimilarity * 0.20 +
+        featureSimilarity * 0.20;
     return finalScore;
-
 }
-
 
 function generateImagePHash(img) {
-
     const resizedImage = resizeImage(img, 32, 32);
-
     const grayscaleValues = convertToGrayscale(resizedImage);
-
     const grayscaleMatrix = createMatrix(grayscaleValues);
-
     const dctMatrix = calculateDCTMatrix(grayscaleMatrix);
-
     const lowFrequency = extractLowFrequency(dctMatrix);
-
     const average = calculateAverage(lowFrequency);
-
     const pHash = generatePHash(lowFrequency, average);
 
     return pHash;
-
 }
