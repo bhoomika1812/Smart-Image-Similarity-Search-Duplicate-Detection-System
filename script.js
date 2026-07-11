@@ -375,6 +375,10 @@ ${result.combinedSimilarity.toFixed(2)}%</p>
 
 <p>Hamming Distance: ${result.hammingDistance}</p>
 
+<p>dHash Similarity: ${result.dHashSimilarity.toFixed(2)}%</p>
+
+<p>dHash Distance: ${result.dHashDistance}</p>
+
 <p>${getSimilarityLabel(result.combinedSimilarity)}</p>
 
 </div>
@@ -603,12 +607,13 @@ function hammingToSimilarity(hammingDistance) {
 
 }
 
-function finalSimilarity(rgbSimilarity, pHashSimilarity) {
+function finalSimilarity(rgbSimilarity, pHashSimilarity, dHashSimilarity
+) {
 
     const finalScore =
-        (rgbSimilarity * 0.6) +
-        (pHashSimilarity * 0.4);
-
+        (rgbSimilarity * 0.4) +
+        (pHashSimilarity * 0.3) +
+        (dHashSimilarity * 0.3);  // Adjust weights as needed
     return finalScore;
 
 }
