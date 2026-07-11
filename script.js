@@ -607,8 +607,7 @@ function hammingToSimilarity(hammingDistance) {
 
 }
 
-function finalSimilarity(rgbSimilarity, pHashSimilarity, dHashSimilarity
-) {
+function finalSimilarity(rgbSimilarity, pHashSimilarity, dHashSimilarity) {
 
     const finalScore =
         (rgbSimilarity * 0.4) +
