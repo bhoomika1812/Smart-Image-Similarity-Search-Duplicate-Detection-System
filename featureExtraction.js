@@ -22,6 +22,9 @@ function extractFeatures(img) {
 
 }
 
+/*it returns average brightness of the image, which is calculated by converting 
+each pixel to grayscale and averaging the values.*/
+
 function calculateBrightness(data) {
 
     let total = 0;
@@ -37,5 +40,37 @@ function calculateBrightness(data) {
     }
 
     return total / (data.length / 4);
+
+}
+
+//Higher contrast → larger value.
+
+function calculateContrast(data) {
+
+    let brightness = [];
+
+    for (let i = 0; i < data.length; i += 4) {
+
+        const gray =
+            0.299 * data[i] +
+            0.587 * data[i + 1] +
+            0.114 * data[i + 2];
+
+        brightness.push(gray);
+    }
+
+    const mean =
+        brightness.reduce((a, b) => a + b, 0) /
+        brightness.length;
+
+    let variance = 0;
+
+    brightness.forEach(value => {
+        variance += Math.pow(value - mean, 2);
+    });
+
+    variance /= brightness.length;
+
+    return Math.sqrt(variance);
 
 }
