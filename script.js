@@ -103,8 +103,14 @@ function compareHistograms(histogram1, histogram2) {
 }
 
 function distanceToSimilarity(distance) {
-    const similarity = 100 / (1 + distance / 1000);
-    return similarity;
+
+    const MAX_DISTANCE = 400000;
+
+    let similarity =
+        100 - (distance / MAX_DISTANCE) * 100;
+
+    return Math.max(0, similarity);
+
 }
 
 function getSimilarityLabel(similarity) {
@@ -249,7 +255,7 @@ ${results[0].combinedSimilarity.toFixed(2)}%</p>
 <div class="card">
 <img src="${bestMatch.image}" width="250">
 
-<p>Similarity: ${distanceToSimilarity(bestMatch.distance).toFixed(2)}%</p>
+<p>Final Similarity: ${bestMatch.combinedSimilarity.toFixed(2)}%</p>
 
 <p>RGB Distance: ${bestMatch.distance.toFixed(2)}</p>
 
@@ -258,7 +264,7 @@ ${results[0].combinedSimilarity.toFixed(2)}%</p>
 <p>dHash Distance: ${bestMatch.dHashDistance}</p>
 <p>dHash Similarity: ${bestMatch.dHashSimilarity.toFixed(2)}%</p>
 
-<p>${getSimilarityLabel(distanceToSimilarity(bestMatch.distance))}</p>
+<p>${getSimilarityLabel(bestMatch.combinedSimilarity)}</p>
 </div>
 `;
 
